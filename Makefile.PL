@@ -1,11 +1,11 @@
-# $Id: Makefile.PL,v 1.3 2004/03/31 13:29:51 guillaume Exp $
+# $Id: Makefile.PL,v 1.4 2004/04/02 13:05:31 guillaume Exp $
 
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME         => 'WWW::Google::Images',
     VERSION_FROM => 'lib/WWW/Google/Images.pm',
-    EXE_FILES    => [ 'bin/fetch-google/images' ],
+    EXE_FILES    => [ 'bin/fetch-google-images' ],
     AUTHOR       => 'Guillaume Rousse <grousse@cpan.org>',
     PREREQ_PM    => {
 	'WWW::Mechanize' => 0.5,
