@@ -1,4 +1,4 @@
-# $Id: Images.pm,v 1.16 2005/01/31 15:34:00 rousse Exp $
+# $Id: Images.pm,v 1.18 2005/02/07 14:19:12 rousse Exp $
 package WWW::Google::Images;
 
 =head1 NAME
@@ -7,7 +7,7 @@ WWW::Google::Images - Google Images Agent
 
 =head1 VERSION
 
-Version 0.6.0
+Version 0.6.1
 
 =head1 DESCRIPTION
 
@@ -39,7 +39,7 @@ use WWW::Mechanize;
 use WWW::Google::Images::SearchResult;
 use HTML::Parser;
 use strict;
-our $VERSION = '0.6.0';
+our $VERSION = '0.6.1';
 
 =head1 Constructor
 
@@ -216,7 +216,7 @@ sub _extract_images {
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004, INRIA.
+Copyright (C) 2004-2005, INRIA.
 
 This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 

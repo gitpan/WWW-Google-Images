@@ -1,4 +1,4 @@
-# $Id: Image.pm,v 1.7 2005/01/31 16:03:29 rousse Exp $
+# $Id: Image.pm,v 1.8 2005/02/07 14:19:13 rousse Exp $
 package WWW::Google::Images::Image;
 
 =head1 NAME
@@ -160,7 +160,7 @@ sub _get_file {
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004, INRIA.
+Copyright (C) 2004-2005, INRIA.
 
 This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 

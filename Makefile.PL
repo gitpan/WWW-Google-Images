@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.5 2004/04/08 07:42:09 guillaume Exp $
+# $Id: Makefile.PL,v 1.6 2005/02/07 14:19:36 rousse Exp $
 
 use ExtUtils::MakeMaker;
 
@@ -10,6 +10,7 @@ WriteMakefile(
     PREREQ_PM    => {
 	'WWW::Mechanize' => 0.5,
 	'Getopt::Long'   => 0,
-	'Test::URI'      => 0
+	'Test::URI'      => 0,
+	'HTML::Parser'   => 0
     }
 );

@@ -1,11 +1,12 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         WWW-Google-Images
-version:      0.6.0
+version:      0.6.1
 version_from: lib/WWW/Google/Images.pm
 installdirs:  site
 requires:
     Getopt::Long:                  0
+    HTML::Parser:                  0
     Test::URI:                     0
     WWW::Mechanize:                0.5
 
