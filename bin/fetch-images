@@ -1,0 +1,25 @@
+#!/usr/bin/perl
+# $Id: fetch-images.pl,v 1.1 2004/03/31 13:05:47 guillaume Exp $
+
+use Getopt::Long;
+use WWW::Google::Images;
+use strict;
+
+my %opts;
+my $base = 'image';
+my $limit = 100;
+GetOptions(
+    "limit=i" => \$limit,
+    "base=s"  => \$base
+);
+
+my $agent = WWW::Google::Images->new();
+
+while (my $item = <>) {
+    chomp $item;
+    my $result = $agent->search($item, limit => $limit);
+    if ($result) {
+	mkdir($item);
+	$result->save_all_contents(dir => $item, base => $base);
+    }
+}
