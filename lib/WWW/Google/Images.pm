@@ -1,4 +1,4 @@
-# $Id: Images.pm,v 1.13 2004/11/03 10:23:54 rousse Exp $
+# $Id: Images.pm,v 1.16 2005/01/31 15:34:00 rousse Exp $
 package WWW::Google::Images;
 
 =head1 NAME
@@ -7,7 +7,7 @@ WWW::Google::Images - Google Images Agent
 
 =head1 VERSION
 
-Version 0.5.1
+Version 0.6.0
 
 =head1 DESCRIPTION
 
@@ -37,8 +37,9 @@ heavily inspired from L<WWW::Google::Groups>.
 
 use WWW::Mechanize;
 use WWW::Google::Images::SearchResult;
+use HTML::Parser;
 use strict;
-our $VERSION = '0.5.1';
+our $VERSION = '0.6.0';
 
 =head1 Constructor
 
@@ -94,6 +95,40 @@ Optional parameters:
 
 limit the maximum number of result returned to $limit.
 
+=item min_width => I<$width>
+
+limit the minimum width of result returned to $width pixels.
+
+=item min_height => I<$height>
+
+limit the minimum width of result returned to $height pixels.
+
+=item min_size => I<$size>
+
+limit the minimum size of result returned to $size ko.
+
+=item max_width => I<$width>
+
+limit the maximum width of result returned to $width pixels.
+
+=item max_height => I<$height>
+
+limit the maximum width of result returned to $height pixels.
+
+=item max_size => I<$size>
+
+limit the maximum size of result returned to $size ko.
+
+=item regex => I<$regex>
+
+limit the result returned to those whose filename matches case-sensitive
+$regex regular expression.
+
+=item iregex => I<$regex>
+
+limit the result returned to those whose filename matches case-insensitive
+$regex regular expression.
+
 =back
 
 =cut
@@ -119,8 +154,8 @@ sub search {
 
     LOOP: {
 	do {
-	    push(@images, $self->_extract_images($arg{limit} ? $arg{limit} - @images : 0));
-	    last if $arg{limit} && @images >= $arg{limit};
+	    push(@images, $self->_extract_images(($arg{limit} ? $arg{limit} - @images : 0), %arg));
+	    last if $arg{limit} && @images == $arg{limit};
 	} while ($self->_next_page(++$page));
     }
 
@@ -134,18 +169,46 @@ sub _next_page {
 }
 
 sub _extract_images {
-    my ($self, $limit) = @_;
+    my ($self, $limit, %arg) = @_;
 
     my @images;
+    my @data;
 
     my @links = $self->{_agent}->find_all_links( url_regex => qr/imgurl/ );
 
-    foreach my $link (@links) {
-	last if $limit && @images >= $limit;
-	$link->url() =~ /imgurl=([^&]+)&imgrefurl=([^&]+)/;
+    if (
+	$arg{min_size}   ||
+	$arg{max_size}   ||
+	$arg{min_width}  || 
+	$arg{max_width}  ||
+	$arg{min_height} ||
+	$arg{max_height}
+    ) {
+	my $parser = HTML::Parser->new();
+	my $callback = sub {
+	    my ($text) = @_;
+	    if ($text =~ /^(\d+) x (\d+) pixels - (\d+)k$/) {
+		push(@data, { width => $1, height => $2, size => $3 });
+	    }
+	};
+	$parser->handler(text => $callback, 'text');
+	$parser->parse($self->{_agent}->content());
+    }
+
+    for my $i (0 .. $#links) {
+	next if $arg{min_size} && $data[$i]->{size} < $arg{min_size};
+	next if $arg{max_size} && $data[$i]->{size} > $arg{max_size};
+	next if $arg{min_width} && $data[$i]->{width} < $arg{min_width};
+	next if $arg{max_width} && $data[$i]->{width} > $arg{max_width};
+	next if $arg{min_height} && $data[$i]->{height} < $arg{min_height};
+	next if $arg{max_height} && $data[$i]->{height} > $arg{max_height};
+	$links[$i]->url() =~ /imgurl=([^&]+)&imgrefurl=([^&]+)/;
 	my $content = $1;
 	my $context = $2;
+	next if $arg{regex} && $content !~ /$arg{regex}/;
+	next if $arg{iregex} && $content !~ /$arg{iregex}/i;
 	push(@images, { content => $content, context => $context});
+	last if $limit && @images == $limit;
     }
 
     return @images;

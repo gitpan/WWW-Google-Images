@@ -1,4 +1,4 @@
-# $Id: Image.pm,v 1.5 2004/11/03 10:07:07 rousse Exp $
+# $Id: Image.pm,v 1.7 2005/01/31 16:03:29 rousse Exp $
 package WWW::Google::Images::Image;
 
 =head1 NAME
@@ -14,6 +14,9 @@ WWW::Google::Images::Image - Image object for WWW::Google::Images
 Creates and returns a new C<WWW::Google::Images::Image> object.
 
 =cut
+
+use File::Basename;
+use File::Path;
 
 sub new {
     my ($class, $agent, $content, $context) = @_;
@@ -121,6 +124,12 @@ sub save_context {
 
 sub _save_as {
     my ($self, $file, $url) = @_;
+
+    # make sure the path exist
+    my $dir = dirname($file);
+    mkpath($dir) unless -d $dir;
+
+    # save file
     $self->{_agent}->get($url, ":content_file" => $file );
     $self->{_agent}->back();
 }
