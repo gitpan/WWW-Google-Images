@@ -1,4 +1,4 @@
-# $Id: Images.pm,v 1.11 2004/07/23 12:57:34 rousse Exp $
+# $Id: Images.pm,v 1.13 2004/11/03 10:23:54 rousse Exp $
 package WWW::Google::Images;
 
 =head1 NAME
@@ -7,7 +7,7 @@ WWW::Google::Images - Google Images Agent
 
 =head1 VERSION
 
-Version 0.5
+Version 0.5.1
 
 =head1 DESCRIPTION
 
@@ -38,7 +38,7 @@ heavily inspired from L<WWW::Google::Groups>.
 use WWW::Mechanize;
 use WWW::Google::Images::SearchResult;
 use strict;
-our $VERSION = '0.5';
+our $VERSION = '0.5.1';
 
 =head1 Constructor
 

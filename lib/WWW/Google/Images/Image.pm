@@ -1,4 +1,4 @@
-# $Id: Image.pm,v 1.4 2004/03/31 13:53:52 guillaume Exp $
+# $Id: Image.pm,v 1.5 2004/11/03 10:07:07 rousse Exp $
 package WWW::Google::Images::Image;
 
 =head1 NAME
@@ -65,6 +65,10 @@ Optional parameters:
 
 Use $file as file name.
 
+=item dir => I<$directory>
+
+Use $directory as a directory path to save the file.  If only 'file' is specified, it will be saved in a path relative to the current working directory.
+
 =item base => I<$base>
 
 Use $base with lowercase original extension added as file name.
@@ -93,6 +97,10 @@ Optional parameters:
 =item file => I<$file>
 
 Use $file as file name.
+
+=item dir => I<$directory>
+
+Use $directory as a directory path to save the file.  If only 'file' is specified, it will be saved in a path relative to the current working directory.
 
 =item base => I<$base>
 
