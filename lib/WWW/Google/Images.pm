@@ -1,4 +1,4 @@
-# $Id: Images.pm,v 1.4 2004/03/31 13:53:52 guillaume Exp $
+# $Id: Images.pm,v 1.8 2004/04/02 13:02:32 guillaume Exp $
 package WWW::Google::Images;
 
 =head1 NAME
@@ -7,7 +7,7 @@ WWW::Google::Images - Google Images Agent
 
 =head1 VERSION
 
-Version 0.1
+Version 0.2
 
 =head1 DESCRIPTION
 
@@ -38,7 +38,7 @@ heavily inspired from L<WWW::Google::Groups>.
 use WWW::Mechanize;
 use WWW::Google::Images::SearchResult;
 use strict;
-our $VERSION = '0.01';
+our $VERSION = '0.2';
 
 =head1 Constructor
 
@@ -73,11 +73,13 @@ sub new {
     my $a = WWW::Mechanize->new(onwarn => undef, onerror => undef);
     $a->proxy(['http'], $arg{proxy}) if $arg{proxy};
 
-    bless {
+    my $self = bless {
 	_server => ($arg{server} || 'http://images.google.com/'),
 	_proxy => $arg{proxy},
 	_agent => $a,
     }, $class;
+
+    return $self;
 }
 
 =head2 $agent->search(I<$query>, I<%args>);
@@ -119,10 +121,16 @@ sub search {
 	do {
 	    push(@images, $self->_extract_images($arg{limit} ? $arg{limit} - @images : 0));
 	    last if $arg{limit} && @images >= $arg{limit};
-	} while ($self->{_agent}->follow_link(text => ++$page));
+	} while ($self->_next_page(++$page));
     }
 
     return WWW::Google::Images::SearchResult->new($self->{_agent}, @images);
+}
+
+sub _next_page {
+    my ($self, $page) = @_;
+
+    return $self->{_agent}->follow_link(text => $page)
 }
 
 sub _extract_images {

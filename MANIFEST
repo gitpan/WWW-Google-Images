@@ -1,4 +1,5 @@
-bin/fetch-images
+bin/fetch-google-images
+ChangeLog
 lib/WWW/Google/Images.pm
 lib/WWW/Google/Images/Image.pm
 lib/WWW/Google/Images/SearchResult.pm

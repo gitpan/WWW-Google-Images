@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: fetch-images.pl,v 1.1 2004/03/31 13:05:47 guillaume Exp $
+# $Id: fetch-google-images,v 1.1 2004/04/02 12:58:02 guillaume Exp $
 
 use Getopt::Long;
 use WWW::Google::Images;
