@@ -1,18 +1,15 @@
 #!/usr/bin/perl
-# $Id: test.pl,v 1.9 2005/02/07 14:13:20 rousse Exp $
-use Test::More tests => 35;
+# $Id: 01run.t,v 1.11 2005/05/23 16:23:08 rousse Exp $
+use Test::More tests => 34;
 use Test::URI;
 use File::Temp qw/tempdir/;
 use File::Find;
 use Image::Info qw/image_info dim/;
+use WWW::Google::Images;
 use strict;
 
 my $query = 'Cannabis sativa indica';
 
-
-BEGIN {
-    use_ok 'WWW::Google::Images';
-}
 
 # skip all other tests if the network is not available
 SKIP: {
@@ -59,7 +56,7 @@ SKIP: {
     ok(! defined $image, 'search limit < 20 works');
     print $image;
 
-    my $result = $agent->search($query, limit => 1);
+    $result = $agent->search($query, limit => 1);
 
     my $subdir = $dir . '/subdir';
     $result->save_all(content => 1, summary => 1, dir => $subdir, base => 'image');
@@ -254,7 +251,9 @@ sub get_size_callback {
     return sub {
 	return unless /\.(png|gif|jpe?g)$/i;
 
-	die unless $check->(-s $File::Find::name);
+	my ($blksize, $blkcount) = (stat($File::Find::name))[11,12];
+
+	die unless $check->($blksize * $blkcount / 8);
     };
 }
 
