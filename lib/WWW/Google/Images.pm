@@ -1,4 +1,4 @@
-# $Id: Images.pm,v 1.19 2005/05/23 16:24:27 rousse Exp $
+# $Id: Images.pm,v 1.25 2006/08/22 13:03:13 rousse Exp $
 package WWW::Google::Images;
 
 =head1 NAME
@@ -7,7 +7,7 @@ WWW::Google::Images - Google Images Agent
 
 =head1 VERSION
 
-Version 0.6.2
+Version 0.6.3
 
 =head1 DESCRIPTION
 
@@ -19,18 +19,18 @@ heavily inspired from L<WWW::Google::Groups>.
     use WWW::Google::Images;
 
     $agent = WWW::Google::Images->new(
-	server => 'images.google.com',
-	proxy  => 'my.proxy.server:port',
+        server => 'images.google.com',
+        proxy  => 'my.proxy.server:port',
     );
 
     $result = $agent->search('flowers', limit => 10);
 
     while ($image = $result->next()) {
-	$count++;
-	print $image->content_url();
-	print $image->context_url();
-	print $image->save_content(base => 'image' . $count);
-	print $image->save_context(base => 'page' . $count);
+        $count++;
+        print $image->content_url();
+        print $image->context_url();
+        print $image->save_content(base => 'image' . $count);
+        print $image->save_context(base => 'page' . $count);
     }
 
 =cut
@@ -39,7 +39,8 @@ use WWW::Mechanize;
 use WWW::Google::Images::SearchResult;
 use HTML::Parser;
 use strict;
-our $VERSION = '0.6.2';
+use warnings;
+our $VERSION = '0.6.3';
 
 =head1 Constructor
 
@@ -64,20 +65,20 @@ use I<$proxy> as proxy on port I<$port>.
 =cut
 
 sub new {
-    my ($class, $query, %arg) = @_;
+    my ($class, %arg) = @_;
 
     foreach my $key (qw(server proxy)){
-	next unless $arg{$key};
-	$arg{$key} = 'http://'.$arg{$key} if $arg{$key} !~ m,^\w+?://,o;
+        next unless $arg{$key};
+        $arg{$key} = 'http://'.$arg{$key} if $arg{$key} !~ m,^\w+?://,o;
     }
 
     my $a = WWW::Mechanize->new(onwarn => undef, onerror => undef);
     $a->proxy(['http'], $arg{proxy}) if $arg{proxy};
 
     my $self = bless {
-	_server => ($arg{server} || 'http://images.google.com/'),
-	_proxy  => $arg{proxy},
-	_agent  => $a,
+        _server => ($arg{server} || 'http://images.google.com/'),
+        _proxy  => $arg{proxy},
+        _agent  => $a,
     }, $class;
 
     return $self;
@@ -143,20 +144,20 @@ sub search {
     $self->{_agent}->get($self->{_server});
 
     $self->{_agent}->submit_form(
-	 form_number => 1,
-	 fields      => {
-	     q => $query
-	 }
+        form_number => 1,
+        fields      => {
+            q => $query
+        }
     );
 
     my @images;
     my $page = 1;
 
     LOOP: {
-	do {
-	    push(@images, $self->_extract_images(($arg{limit} ? $arg{limit} - @images : 0), %arg));
-	    last if $arg{limit} && @images == $arg{limit};
-	} while ($self->_next_page(++$page));
+        do {
+            push(@images, $self->_extract_images(($arg{limit} ? $arg{limit} - @images : 0), %arg));
+            last if $arg{limit} && @images == $arg{limit};
+        } while ($self->_next_page(++$page));
     }
 
     return WWW::Google::Images::SearchResult->new($self->{_agent}, @images);
@@ -177,38 +178,38 @@ sub _extract_images {
     my @links = $self->{_agent}->find_all_links( url_regex => qr/imgurl/ );
 
     if (
-	$arg{min_size}   ||
-	$arg{max_size}   ||
-	$arg{min_width}  || 
-	$arg{max_width}  ||
-	$arg{min_height} ||
-	$arg{max_height}
+        $arg{min_size}   ||
+        $arg{max_size}   ||
+        $arg{min_width}  || 
+        $arg{max_width}  ||
+        $arg{min_height} ||
+        $arg{max_height}
     ) {
-	my $parser = HTML::Parser->new();
-	my $callback = sub {
-	    my ($text) = @_;
-	    if ($text =~ /^(\d+) x (\d+) pixels - (\d+)k$/) {
-		push(@data, { width => $1, height => $2, size => $3 });
-	    }
-	};
-	$parser->handler(text => $callback, 'text');
-	$parser->parse($self->{_agent}->content());
+        my $parser = HTML::Parser->new();
+        my $callback = sub {
+            my ($text) = @_;
+            if ($text =~ /^(\d+) x (\d+) pixels - (\d+)k/o) {
+                push(@data, { width => $1, height => $2, size => $3 });
+            }
+        };
+        $parser->handler(text => $callback, 'text');
+        $parser->parse($self->{_agent}->content());
     }
 
     for my $i (0 .. $#links) {
-	next if $arg{min_size} && $data[$i]->{size} < $arg{min_size};
-	next if $arg{max_size} && $data[$i]->{size} > $arg{max_size};
-	next if $arg{min_width} && $data[$i]->{width} < $arg{min_width};
-	next if $arg{max_width} && $data[$i]->{width} > $arg{max_width};
-	next if $arg{min_height} && $data[$i]->{height} < $arg{min_height};
-	next if $arg{max_height} && $data[$i]->{height} > $arg{max_height};
-	$links[$i]->url() =~ /imgurl=([^&]+)&imgrefurl=([^&]+)/;
-	my $content = $1;
-	my $context = $2;
-	next if $arg{regex} && $content !~ /$arg{regex}/;
-	next if $arg{iregex} && $content !~ /$arg{iregex}/i;
-	push(@images, { content => $content, context => $context});
-	last if $limit && @images == $limit;
+        next if $arg{min_size} && $data[$i]->{size} < $arg{min_size};
+        next if $arg{max_size} && $data[$i]->{size} > $arg{max_size};
+        next if $arg{min_width} && $data[$i]->{width} < $arg{min_width};
+        next if $arg{max_width} && $data[$i]->{width} > $arg{max_width};
+        next if $arg{min_height} && $data[$i]->{height} < $arg{min_height};
+        next if $arg{max_height} && $data[$i]->{height} > $arg{max_height};
+        $links[$i]->url() =~ /imgurl=([^&]+)&imgrefurl=([^&]+)/;
+        my $content = $1;
+        my $context = $2;
+        next if $arg{regex} && $content !~ /$arg{regex}/;
+        next if $arg{iregex} && $content !~ /$arg{iregex}/i;
+        push(@images, { content => $content, context => $context});
+        last if $limit && @images == $limit;
     }
 
     return @images;
@@ -216,7 +217,7 @@ sub _extract_images {
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004-2005, INRIA.
+Copyright (C) 2004-2006, INRIA.
 
 This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 

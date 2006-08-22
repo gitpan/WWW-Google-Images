@@ -1,4 +1,4 @@
-# $Id: Image.pm,v 1.8 2005/02/07 14:19:13 rousse Exp $
+# $Id: Image.pm,v 1.10 2006/08/22 13:03:13 rousse Exp $
 package WWW::Google::Images::Image;
 
 =head1 NAME
@@ -22,9 +22,9 @@ sub new {
     my ($class, $agent, $content, $context) = @_;
 
     my $self = bless {
-	_agent   => $agent,
-	_content => $content,
-	_context => $context,
+        _agent   => $agent,
+        _content => $content,
+        _context => $context,
     }, $class;
 
     return $self;
@@ -139,20 +139,20 @@ sub _get_file {
 
     my $file;
     if ($args{file}) {
-	$file = $args{file};
+        $file = $args{file};
     } elsif ($args{base}) {
-	$url =~ /(\.\w+)$/;
-	$file = $args{base} . lc($1);
+        $url =~ /(\.\w+)$/;
+        $file = $args{base} . lc($1);
     } else {
-	$url =~ /([^\/]+)$/;
-	$file = $1;
+        $url =~ /([^\/]+)$/;
+        $file = $1;
     }
 
     my $dir;
     if ($args{dir}) {
-	$dir = $args{dir};
+        $dir = $args{dir};
     } else {
-	$dir = '.';
+        $dir = '.';
     }
 
     return $dir . '/' . $file;
@@ -160,7 +160,7 @@ sub _get_file {
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2004-2005, INRIA.
+Copyright (C) 2004-2006, INRIA.
 
 This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 
