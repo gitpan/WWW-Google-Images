@@ -1,4 +1,4 @@
-# $Id: Images.pm,v 1.25 2006/08/22 13:03:13 rousse Exp $
+# $Id: Images.pm,v 1.28 2006/08/22 13:57:18 rousse Exp $
 package WWW::Google::Images;
 
 =head1 NAME
@@ -7,7 +7,7 @@ WWW::Google::Images - Google Images Agent
 
 =head1 VERSION
 
-Version 0.6.3
+Version 0.6.4
 
 =head1 DESCRIPTION
 
@@ -40,7 +40,7 @@ use WWW::Google::Images::SearchResult;
 use HTML::Parser;
 use strict;
 use warnings;
-our $VERSION = '0.6.3';
+our $VERSION = '0.6.4';
 
 =head1 Constructor
 
@@ -120,6 +120,14 @@ limit the maximum width of result returned to $height pixels.
 
 limit the maximum size of result returned to $size ko.
 
+=item ratio => I<$ratio>
+
+limit the width/height ratio of result returned to $ratio (+/- tolerance).
+
+=item ratio_delta => I<$ratio_delta>
+
+set the tolerance limit for the ratio limit to $ratio_delta (default: 1.0).
+
 =item regex => I<$regex>
 
 limit the result returned to those whose filename matches case-sensitive
@@ -183,17 +191,33 @@ sub _extract_images {
         $arg{min_width}  || 
         $arg{max_width}  ||
         $arg{min_height} ||
-        $arg{max_height}
+        $arg{max_height} ||
+        $arg{ratio}
     ) {
         my $parser = HTML::Parser->new();
+        my $space = "(?:\\s|&nbsp;)";
+        my $pattern = qr/
+            ^
+            (\d+) $space+ x $space+ (\d+) $space+ pixels
+            $space+ - $space+ (\d+)k
+            $space+ - $space+ \w+
+            $
+        /ox;
         my $callback = sub {
             my ($text) = @_;
-            if ($text =~ /^(\d+) x (\d+) pixels - (\d+)k/o) {
+            if ($text =~ $pattern) {
                 push(@data, { width => $1, height => $2, size => $3 });
             }
         };
         $parser->handler(text => $callback, 'text');
         $parser->parse($self->{_agent}->content());
+    }
+
+    my ($upper, $lower);
+    if ($arg{ratio}) {
+        my $delta = $arg{ratio_delta} || 1.0;
+        $lower = $arg{ratio} - $delta;
+        $upper = $arg{ratio} + $delta;
     }
 
     for my $i (0 .. $#links) {
@@ -203,6 +227,10 @@ sub _extract_images {
         next if $arg{max_width} && $data[$i]->{width} > $arg{max_width};
         next if $arg{min_height} && $data[$i]->{height} < $arg{min_height};
         next if $arg{max_height} && $data[$i]->{height} > $arg{max_height};
+        if ($arg{ratio}) {
+            my $ratio = $data[$i]->{width} / $data[$i]->{height};
+            next if $ratio < $lower || $ratio > $upper;
+        }
         $links[$i]->url() =~ /imgurl=([^&]+)&imgrefurl=([^&]+)/;
         my $content = $1;
         my $context = $2;
