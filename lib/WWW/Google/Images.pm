@@ -1,4 +1,4 @@
-# $Id: Images.pm,v 1.28 2006/08/22 13:57:18 rousse Exp $
+# $Id: Images.pm,v 1.31 2007/12/29 01:09:12 rousse Exp $
 package WWW::Google::Images;
 
 =head1 NAME
@@ -7,7 +7,7 @@ WWW::Google::Images - Google Images Agent
 
 =head1 VERSION
 
-Version 0.6.4
+Version 0.6.5
 
 =head1 DESCRIPTION
 
@@ -40,7 +40,7 @@ use WWW::Google::Images::SearchResult;
 use HTML::Parser;
 use strict;
 use warnings;
-our $VERSION = '0.6.4';
+our $VERSION = '0.6.5';
 
 =head1 Constructor
 
@@ -195,12 +195,11 @@ sub _extract_images {
         $arg{ratio}
     ) {
         my $parser = HTML::Parser->new();
-        my $space = "(?:\\s|&nbsp;)";
         my $pattern = qr/
             ^
-            (\d+) $space+ x $space+ (\d+) $space+ pixels
-            $space+ - $space+ (\d+)k
-            $space+ - $space+ \w+
+            (\d+) \s x \s (\d+)
+            \s - \s (\d+)k
+            (?:&nbsp; - &nbsp; \w*)?
             $
         /ox;
         my $callback = sub {

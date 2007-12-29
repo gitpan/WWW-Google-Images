@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: 01run.t,v 1.14 2006/08/22 13:45:25 rousse Exp $
+# $Id: 01run.t,v 1.19 2007/12/29 01:03:52 rousse Exp $
 use Test::More tests => 35;
 use Test::URI;
 use File::Temp qw/tempdir/;
@@ -31,9 +31,9 @@ SKIP: {
     my $context_url = $image->context_url();
     ok($context_url, "context URL exist");
     uri_scheme_ok($context_url, 'http');
-    like($context_url, qr/\.(htm|html)$/i, 'context URL is an web page URL');
+    like($context_url, qr/\.(htm|html|php)$/i, 'context URL is an web page URL');
 
-    my $dir = tempdir( CLEANUP => 1 );
+    my $dir = tempdir(CLEANUP => $ENV{TEST_DEBUG} ? 0 : 1);
 
     my $content_file;
     $content_file = $image->save_content(dir => $dir, file => 'content');
@@ -225,8 +225,11 @@ sub get_max_result_count {
             q => 'Cannabis sativa indica'
         }
     );
-    my @links = $test_agent->find_all_links( text_regex => qr/\d+/);
-    $test_agent->get($links[-1]->url());
+    # follow all 'next' links until unavailable
+    while (my $next = $test_agent->find_link(text => 'Next')) {;
+        $test_agent->get($next->url());
+    }
+    # extract number from the page
     $test_agent->content() =~ m/similar to the (\d+) already displayed/;
     return $1;
 }
@@ -263,9 +266,7 @@ sub get_size_callback {
     return sub {
         return unless /\.(png|gif|jpe?g)$/i;
 
-        my ($blksize, $blkcount) = (stat($File::Find::name))[11,12];
-
-        die unless $check->($blksize * $blkcount / 8);
+        die unless $check->(-s $File::Find::name);
     };
 }
 
